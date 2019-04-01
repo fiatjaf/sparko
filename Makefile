@@ -1,6 +1,6 @@
 all: spark
 
-spark: main.go rpc.go bindata.go
+spark: $(shell find . -name "*.go")
 	go build -o ./spark -ldflags "-X main.Version=$$(jq -r '.version' node_modules/spark-wallet/package.json)"
 
 bindata.go: node_modules/spark-wallet

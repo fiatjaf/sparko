@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"net/http"
 	"os"
@@ -11,6 +12,8 @@ import (
 	"github.com/elazarl/go-bindata-assetfs"
 	"github.com/fiatjaf/lightningd-gjson-rpc"
 	"github.com/gorilla/mux"
+	"github.com/gorilla/securecookie"
+	"github.com/lucsky/cuid"
 	"github.com/rs/cors"
 	"github.com/rs/zerolog"
 	"github.com/spf13/pflag"
@@ -21,7 +24,11 @@ var err error
 var Version string
 var ln *lightning.Client
 var log = zerolog.New(os.Stderr).Output(zerolog.ConsoleWriter{Out: os.Stderr})
+var scookie = securecookie.New([]byte("ilsvfoisg7rils3g4fo8segzr"), []byte("OHAOHDP4BLAKBDPAS3BÇSF"))
 var httpPublic = &assetfs.AssetFS{Asset: Asset, AssetDir: AssetDir, Prefix: ""}
+var broker []sseclient
+var accessKey string
+var login string
 
 func main() {
 	zerolog.SetGlobalLevel(zerolog.DebugLevel)
@@ -42,18 +49,30 @@ func main() {
 	pflag.StringP("port", "p", "9737", "http(s) server port")
 	pflag.StringP("host", "i", "localhost", "http(s) server listen address")
 	pflag.StringP("login", "u", "generate random", "http basic auth login, \"username:password\" format")
+	pflag.BoolP("print-key", "k", false, "print access key to console")
+	pflag.Bool("no-webui", false, "run API server without serving client assets")
+	pflag.Bool("no-test-conn", false, "skip testing access to c-lightning rpc")
 	pflag.BoolP("version", "v", false, "output version number")
 	pflag.Parse()
 	viper.BindPFlags(pflag.CommandLine)
 
-	// pretty.Log(viper.AllSettings())
-
+	// --version
 	if viper.GetBool("version") {
 		fmt.Println(Version)
 		os.Exit(0)
 	}
 
-	// starting app
+	// compute access key
+	login = viper.GetString("login")
+	if login == "generate random" {
+		login = cuid.New() + ":" + cuid.New()
+	}
+	accessKey = hmacStr(login, "access-key")
+	if viper.GetBool("print-key") {
+		fmt.Println("Access key for remote API access: " + accessKey)
+	}
+
+	// start lightning client
 	ln = &lightning.Client{
 		Path: path.Join(viper.GetString("ln-path"), "lightning-rpc"),
 	}
@@ -62,14 +81,28 @@ func main() {
 		probeLightningd()
 	}
 
+	// declare routes
 	router := mux.NewRouter()
-
+	router.Use(authMiddleware)
 	router.Path("/rpc").Methods("POST").HandlerFunc(handleRPC)
-
+	router.Path("/stream").Methods("GET").HandlerFunc(handleStream)
 	if !viper.GetBool("no-webui") {
+		router.Path("/").Methods("GET").HandlerFunc(
+			func(w http.ResponseWriter, r *http.Request) {
+				indexb, err := Asset("index.html")
+				if err != nil {
+					w.WriteHeader(404)
+					return
+				}
+				indexb = bytes.Replace(indexb, []byte("{{accessKey}}"), []byte(accessKey), 1)
+				w.Header().Set("Content-Type", "text/html")
+				w.Write(indexb)
+				return
+			})
 		router.PathPrefix("/").Methods("GET").Handler(http.FileServer(httpPublic))
 	}
 
+	// start server
 	log.Info().Str("port", viper.GetString("port")).Msg("listening.")
 	srv := &http.Server{
 		Handler: cors.New(cors.Options{
@@ -83,21 +116,4 @@ func main() {
 	if err := srv.ListenAndServe(); err != http.ErrServerClosed {
 		log.Warn().Err(err).Msg("listenAndServe")
 	}
-}
-
-func probeLightningd() {
-	nodeinfo, err := ln.Call("getinfo")
-	if err != nil {
-		log.Warn().Err(err).Msg("can't talk to lightningd. retrying.")
-		time.Sleep(time.Second * 5)
-		probeLightningd()
-		return
-	}
-	log.Info().
-		Str("id", nodeinfo.Get("id").String()).
-		Str("alias", nodeinfo.Get("alias").String()).
-		Int64("channels", nodeinfo.Get("num_active_channels").Int()).
-		Int64("blockheight", nodeinfo.Get("blockheight").Int()).
-		Str("version", nodeinfo.Get("version").String()).
-		Msg("lightning node connected")
 }
