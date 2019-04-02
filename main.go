@@ -14,6 +14,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/gorilla/securecookie"
 	"github.com/lucsky/cuid"
+	homedir "github.com/mitchellh/go-homedir"
 	"github.com/rs/cors"
 	"github.com/rs/zerolog"
 	"github.com/spf13/pflag"
@@ -44,13 +45,16 @@ func main() {
 	viper.AutomaticEnv()
 	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
 
-	pflag.StringP("ln-path", "l", "/home/fiatjaf/.lightning", "path to c-lightning data directory")
+	pflag.StringP("ln-path", "l", "~/.lightning", "path to c-lightning data directory")
 	pflag.StringP("port", "p", "9737", "http(s) server port")
 	pflag.StringP("host", "i", "localhost", "http(s) server listen address")
 	pflag.StringP("login", "u", "generate random", "http basic auth login, \"username:password\" format")
-	pflag.BoolP("print-key", "k", false, "print access key to console")
+	pflag.String("tls-path", "~/.spark-wallet/tls/", "directory to read key.pem and cert.pem for TLS")
+	pflag.Bool("force-tls", false, "enable TLS even when binding on localhost")
+	pflag.Bool("no-tls", false, "disable TLS for non-localhost hosts")
 	pflag.Bool("no-webui", false, "run API server without serving client assets")
 	pflag.Bool("no-test-conn", false, "skip testing access to c-lightning rpc")
+	pflag.BoolP("print-key", "k", false, "print access key to console")
 	pflag.BoolP("version", "v", false, "output version number")
 	pflag.BoolP("help", "h", false, "output usage information")
 	pflag.Parse()
@@ -81,9 +85,12 @@ func main() {
 	}
 
 	// start lightning client
-	ln = &lightning.Client{
-		Path: path.Join(viper.GetString("ln-path"), "lightning-rpc"),
+	lnpath := viper.GetString("ln-path")
+	lnpath, err = homedir.Expand(lnpath)
+	if err != nil {
+		log.Fatal().Err(err).Str("path", lnpath).Msg("cannot find home directory.")
 	}
+	ln = &lightning.Client{Path: path.Join(lnpath, "lightning-rpc")}
 	if !viper.GetBool("no-test-conn") {
 		probeLightningd()
 	}
@@ -113,17 +120,30 @@ func main() {
 	}
 
 	// start server
-	log.Info().Str("port", viper.GetString("port")).Msg("listening.")
+	host := viper.GetString("host")
+	port := viper.GetString("port")
 	srv := &http.Server{
 		Handler: cors.New(cors.Options{
 			AllowedOrigins:   []string{"*"},
 			AllowCredentials: false,
 		}).Handler(router),
-		Addr:         viper.GetString("host") + ":" + viper.GetString("port"),
+		Addr:         host + ":" + port,
 		WriteTimeout: 25 * time.Second,
 		ReadTimeout:  25 * time.Second,
 	}
-	if err := srv.ListenAndServe(); err != http.ErrServerClosed {
-		log.Warn().Err(err).Msg("listenAndServe")
+	if host == "localhost" && !viper.GetBool("force-tls") || viper.GetBool("no-tls") {
+		log.Info().Str("addr", "http://"+srv.Addr+"/").Msg("HTTP server on")
+		err = srv.ListenAndServe()
+	} else {
+		log.Info().Str("addr", "https://"+srv.Addr+"/").Msg("HTTPS server on")
+		tlspath := viper.GetString("tls-path")
+		tlspath, err = homedir.Expand(tlspath)
+		if err != nil {
+			log.Fatal().Err(err).Str("path", tlspath).Msg("cannot find home directory.")
+		}
+		err = srv.ListenAndServeTLS(path.Join(tlspath, "cert.pem"), path.Join(tlspath, "key.pem"))
+	}
+	if err != http.ErrServerClosed {
+		log.Warn().Err(err).Msg("error starting server.")
 	}
 }
