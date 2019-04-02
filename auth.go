@@ -57,6 +57,10 @@ func authMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
+		if path == "manifest-"+manifestKey+"/manifest.json" {
+			r.URL.Path = "/manifest/manifest.json"
+		}
+
 		next.ServeHTTP(w, r)
 		return
 	})

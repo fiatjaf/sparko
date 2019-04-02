@@ -28,6 +28,7 @@ var log = zerolog.New(os.Stderr).Output(zerolog.ConsoleWriter{Out: os.Stderr})
 var scookie = securecookie.New([]byte("ilsvfoisg7rils3g4fo8segzr"), []byte("OHAOHDP4BLAKBDPAS3BÇSF"))
 var httpPublic = &assetfs.AssetFS{Asset: Asset, AssetDir: AssetDir, Prefix: ""}
 var accessKey string
+var manifestKey string
 var login string
 
 func main() {
@@ -80,6 +81,7 @@ func main() {
 		login = cuid.New() + ":" + cuid.New()
 	}
 	accessKey = hmacStr(login, "access-key")
+	manifestKey = hmacStr(accessKey, "manifest-key")
 	if viper.GetBool("print-key") {
 		fmt.Println("Access key for remote API access: " + accessKey)
 	}
@@ -111,7 +113,8 @@ func main() {
 					w.WriteHeader(404)
 					return
 				}
-				indexb = bytes.Replace(indexb, []byte("{{accessKey}}"), []byte(accessKey), 1)
+				indexb = bytes.Replace(indexb, []byte("{{accessKey}}"), []byte(accessKey), -1)
+				indexb = bytes.Replace(indexb, []byte("{{manifestKey}}"), []byte(manifestKey), -1)
 				w.Header().Set("Content-Type", "text/html")
 				w.Write(indexb)
 				return
