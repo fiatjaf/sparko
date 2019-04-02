@@ -26,7 +26,6 @@ var ln *lightning.Client
 var log = zerolog.New(os.Stderr).Output(zerolog.ConsoleWriter{Out: os.Stderr})
 var scookie = securecookie.New([]byte("ilsvfoisg7rils3g4fo8segzr"), []byte("OHAOHDP4BLAKBDPAS3BÇSF"))
 var httpPublic = &assetfs.AssetFS{Asset: Asset, AssetDir: AssetDir, Prefix: ""}
-var broker []sseclient
 var accessKey string
 var login string
 
@@ -76,16 +75,18 @@ func main() {
 	ln = &lightning.Client{
 		Path: path.Join(viper.GetString("ln-path"), "lightning-rpc"),
 	}
-
 	if !viper.GetBool("no-test-conn") {
 		probeLightningd()
 	}
+
+	// start eventsource thing
+	es := startStreams()
 
 	// declare routes
 	router := mux.NewRouter()
 	router.Use(authMiddleware)
 	router.Path("/rpc").Methods("POST").HandlerFunc(handleRPC)
-	router.Path("/stream").Methods("GET").HandlerFunc(handleStream)
+	router.Path("/stream").Methods("GET").Handler(es)
 	if !viper.GetBool("no-webui") {
 		router.Path("/").Methods("GET").HandlerFunc(
 			func(w http.ResponseWriter, r *http.Request) {
