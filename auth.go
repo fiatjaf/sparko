@@ -44,7 +44,7 @@ func authMiddleware(next http.Handler) http.Handler {
 						Secure:   true,
 						HttpOnly: true,
 						SameSite: http.SameSiteStrictMode,
-						MaxAge:   2592000000,
+						MaxAge:   2592000,
 					}
 					http.SetCookie(w, cookie)
 				}
