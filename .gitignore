@@ -3,3 +3,4 @@
 bindata.go
 node_modules
 spark
+dist
