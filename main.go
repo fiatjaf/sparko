@@ -14,7 +14,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/gorilla/securecookie"
 	"github.com/lucsky/cuid"
-	homedir "github.com/mitchellh/go-homedir"
+	"github.com/mitchellh/go-homedir"
 	"github.com/rs/cors"
 	"github.com/rs/zerolog"
 	"github.com/spf13/pflag"
@@ -34,7 +34,7 @@ func main() {
 	zerolog.SetGlobalLevel(zerolog.DebugLevel)
 	log = log.With().Timestamp().Logger()
 
-	viper.SetConfigName("spark")
+	viper.SetConfigName("sparko")
 	viper.AddConfigPath("$HOME/.config")
 
 	viper.ReadInConfig()
@@ -68,9 +68,9 @@ func main() {
 
 	// --help
 	if viper.GetBool("help") {
-		fmt.Fprintf(os.Stderr, "\nA minimalistic wallet GUI for c-lightning repackaged\n\nUsage\n  $ spark [options]\n\nOptions\n")
+		fmt.Fprintf(os.Stderr, "\nA minimalistic wallet GUI for c-lightning repackaged\n\nUsage\n  $ sparko [options]\n\nOptions\n")
 		pflag.PrintDefaults()
-		fmt.Fprintf(os.Stderr, "\n\nExample\n  $ spark -l ~/.lightning\n\nAll options may also be specified as environment variables:\n  $ LN_PATH=/data/lightning PORT=8070 NO_TLS=1 spark\nOr define a config file at ~/.config/spark.toml or ~/.config/spark.yaml")
+		fmt.Fprintf(os.Stderr, "\n\nExample\n  $ sparko -l ~/.lightning\n\nAll options may also be specified as environment variables:\n  $ LN_PATH=/data/lightning PORT=8070 NO_TLS=1 sparko\nOr define a config file at ~/.config/sparko.toml or ~/.config/sparko.yaml")
 		os.Exit(0)
 	}
 

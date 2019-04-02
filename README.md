@@ -1,4 +1,44 @@
+`sparko` is a reimplementation of the [spark-wallet](https://github.com/shesek/spark-wallet) server, along with a repackaging of its client such that it is distributed as a single binary.
 
+Since it's written in Go hopefully it will be a little faster and lighter than the original server, and easier to use too since it's a single binary.
+
+How to use
+----------
+
+Grab your binary from [the releases page](https://github.com/fiatjaf/spark/releases) and run it.
+
+The options are _almost_ the same:
+
+```
+~> sparko --help
+
+A minimalistic wallet GUI for c-lightning repackaged
+
+Usage
+  $ sparko [options]
+
+Options
+      --force-tls         enable TLS even when binding on localhost
+  -h, --help              output usage information
+  -i, --host string       http(s) server listen address (default "localhost")
+  -l, --ln-path string    path to c-lightning data directory (default "~/.lightning")
+  -u, --login string      http basic auth login, "username:password" format (default "generate random")
+      --no-test-conn      skip testing access to c-lightning rpc
+      --no-tls            disable TLS for non-localhost hosts
+      --no-webui          run API server without serving client assets
+  -p, --port string       http(s) server port (default "9737")
+  -k, --print-key         print access key to console
+      --tls-path string   directory to read key.pem and cert.pem for TLS (default "~/.spark-wallet/tls/")
+  -v, --version           output version number
+
+
+Example
+  $ sparko -l ~/.lightning
+
+All options may also be specified as environment variables:
+  $ LN_PATH=/data/lightning PORT=8070 NO_TLS=1 sparko
+Or define a config file at ~/.config/sparko.toml or ~/.config/sparko.yaml⏎
+```
 
 
 TLS
