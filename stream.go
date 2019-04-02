@@ -88,7 +88,6 @@ func pollInvoice(lastInvoiceIndex int, ee chan<- event) {
 	inv, err := ln.CallWithCustomTimeout(time.Minute*5,
 		"waitanyinvoice", strconv.Itoa(lastInvoiceIndex))
 	if err != nil {
-		log.Error().Err(err).Int("index", lastInvoiceIndex).Msg("error waiting invoice.")
 		return
 	}
 
