@@ -85,7 +85,7 @@ func pollRate(ee chan<- event) {
 func pollInvoice(lastInvoiceIndex int, ee chan<- event) {
 	defer pollInvoice(lastInvoiceIndex, ee)
 
-	inv, err := ln.CallWithCustomTimeout(time.Minute*5,
+	inv, err := ln.CallWithCustomTimeout(time.Hour,
 		"waitanyinvoice", strconv.Itoa(lastInvoiceIndex))
 	if err != nil {
 		return
