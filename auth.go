@@ -8,7 +8,7 @@ import (
 )
 
 func auth(r *http.Request) error {
-	if r.Header.Get("X-Access-Key") == accessKey {
+	if r.Header.Get("X-Access") == accessKey {
 		return nil
 	}
 	if r.URL.Query().Get("access-key") == accessKey {
