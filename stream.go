@@ -6,9 +6,9 @@ import (
 	"strconv"
 	"time"
 
-	eventsource "gopkg.in/antage/eventsource.v1"
-
+	"github.com/fiatjaf/lightningd-gjson-rpc"
 	"github.com/tidwall/gjson"
+	"gopkg.in/antage/eventsource.v1"
 )
 
 type event struct {
@@ -88,6 +88,10 @@ func pollInvoice(lastInvoiceIndex int, ee chan<- event) {
 	inv, err := ln.CallWithCustomTimeout(time.Hour,
 		"waitanyinvoice", strconv.Itoa(lastInvoiceIndex))
 	if err != nil {
+		if _, ok := err.(lightning.ErrorTimeout); ok {
+			time.Sleep(time.Minute)
+		}
+
 		return
 	}
 
