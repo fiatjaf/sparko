@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"github.com/fiatjaf/lightningd-gjson-rpc"
 )
@@ -15,9 +16,10 @@ func handleRPC(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respbytes, err := ln.CallMessageRaw(lightning.DefaultTimeout, req)
+	respbytes, err := ln.CallMessageRaw(time.Second*30, req)
 	if err != nil {
-		log.Error().Err(err).Msg("")
+		log.Error().Err(err).Str("method", req.Method).
+			Msg("error calling rpc")
 		w.WriteHeader(500)
 
 		if cmderr, ok := err.(lightning.ErrorCommand); ok {
