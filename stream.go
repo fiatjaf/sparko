@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/fiatjaf/lightningd-gjson-rpc"
 	"github.com/tidwall/gjson"
 	"gopkg.in/antage/eventsource.v1"
 )
@@ -18,7 +17,6 @@ type event struct {
 
 func startStreams() eventsource.EventSource {
 	id := 1
-	lastInvoiceIndex := 0
 
 	res, err := ln.Call("listinvoices")
 	if err != nil {
@@ -27,11 +25,10 @@ func startStreams() eventsource.EventSource {
 	indexes := res.Get("invoices.#.pay_index").Array()
 	for _, indexr := range indexes {
 		index := int(indexr.Int())
-		if index > lastInvoiceIndex {
-			lastInvoiceIndex = index
+		if index > ln.LastInvoiceIndex {
+			ln.LastInvoiceIndex = index
 		}
 	}
-	log.Info().Int("pay_index", lastInvoiceIndex).Msg("got initial invoice pay_index.")
 
 	es := eventsource.New(
 		eventsource.DefaultSettings(),
@@ -47,7 +44,11 @@ func startStreams() eventsource.EventSource {
 
 	ee := make(chan event)
 	go pollRate(ee)
-	go pollInvoice(lastInvoiceIndex, ee)
+
+	ln.PaymentHandler = func(inv gjson.Result) {
+		ee <- event{typ: "inv-paid", data: inv.String()}
+	}
+	ln.ListenForInvoices()
 
 	go func() {
 		for {
@@ -80,21 +81,4 @@ func pollRate(ee chan<- event) {
 	ee <- event{typ: "btcusd", data: `"` + lastRate + `"`}
 
 	time.Sleep(time.Minute)
-}
-
-func pollInvoice(lastInvoiceIndex int, ee chan<- event) {
-	defer pollInvoice(lastInvoiceIndex, ee)
-
-	inv, err := ln.CallWithCustomTimeout(time.Hour,
-		"waitanyinvoice", strconv.Itoa(lastInvoiceIndex))
-	if err != nil {
-		if _, ok := err.(lightning.ErrorTimeout); ok {
-			time.Sleep(time.Minute)
-		}
-
-		return
-	}
-
-	lastInvoiceIndex = int(inv.Get("pay_index").Int())
-	ee <- event{typ: "inv-paid", data: inv.String()}
 }
