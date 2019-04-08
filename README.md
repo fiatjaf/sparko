@@ -51,6 +51,11 @@ mkdir -p ~/.spark-wallet/tls
 openssl req -x509 -nodes -newkey rsa:2048 -keyout ~/.spark-wallet/tls/key.pem -out ~/.spark-wallet/tls/cert.pem -days 3650
 ```
 
+How to build
+------------
+
+`make` should work.
+
 License
 -------
 

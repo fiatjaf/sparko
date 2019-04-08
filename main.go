@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
 	"net/http"
 	"os"
@@ -9,7 +8,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/elazarl/go-bindata-assetfs"
 	"github.com/fiatjaf/lightningd-gjson-rpc"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/securecookie"
@@ -26,7 +24,6 @@ var Version string
 var ln *lightning.Client
 var log = zerolog.New(os.Stderr).Output(zerolog.ConsoleWriter{Out: os.Stderr})
 var scookie = securecookie.New([]byte("ilsvfoisg7rils3g4fo8segzr"), []byte("OHAOHDP4BLAKBDPAS3BÇSF"))
-var httpPublic = &assetfs.AssetFS{Asset: Asset, AssetDir: AssetDir, Prefix: ""}
 var accessKey string
 var manifestKey string
 var login string
@@ -58,6 +55,7 @@ func main() {
 	pflag.BoolP("print-key", "k", false, "print access key to console")
 	pflag.BoolP("version", "v", false, "output version number")
 	pflag.BoolP("help", "h", false, "output usage information")
+	pflag.CommandLine.SortFlags = false
 	pflag.Parse()
 	viper.BindPFlags(pflag.CommandLine)
 
@@ -106,20 +104,7 @@ func main() {
 	router.Path("/rpc").Methods("POST").HandlerFunc(handleRPC)
 	router.Path("/stream").Methods("GET").Handler(es)
 	if !viper.GetBool("no-webui") {
-		router.Path("/").Methods("GET").HandlerFunc(
-			func(w http.ResponseWriter, r *http.Request) {
-				indexb, err := Asset("index.html")
-				if err != nil {
-					w.WriteHeader(404)
-					return
-				}
-				indexb = bytes.Replace(indexb, []byte("{{accessKey}}"), []byte(accessKey), -1)
-				indexb = bytes.Replace(indexb, []byte("{{manifestKey}}"), []byte(manifestKey), -1)
-				w.Header().Set("Content-Type", "text/html")
-				w.Write(indexb)
-				return
-			})
-		router.PathPrefix("/").Methods("GET").Handler(http.FileServer(httpPublic))
+		addWebUI(router)
 	}
 
 	// start server
