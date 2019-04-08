@@ -1,13 +1,14 @@
 package main
 
 import (
+	"context"
 	"encoding/base64"
 	"fmt"
 	"net/http"
 	"strings"
 )
 
-func auth(r *http.Request) error {
+func defaultAuth(r *http.Request) error {
 	if r.Header.Get("X-Access") == accessKey {
 		return nil
 	}
@@ -34,7 +35,8 @@ func authMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		path := strings.TrimPrefix(r.URL.Path, "/")
 		if path == "" || path == "rpc" || path == "stream" {
-			if err := auth(r); err == nil {
+			// default key / login
+			if err := defaultAuth(r); err == nil {
 				// set cookie
 				user := strings.Split(login, ":")[0]
 				if encoded, err := scookie.Encode("user", user); err == nil {
@@ -52,11 +54,28 @@ func authMiddleware(next http.Handler) http.Handler {
 				next.ServeHTTP(w, r)
 				return
 			}
+
+			// extra keys -- only access the /rpc endpoint
+			if path == "rpc" {
+				for key, permissions := range keys {
+					if r.Header.Get("X-Access") == key {
+						r = r.WithContext(context.WithValue(
+							context.TODO(),
+							"permissions", permissions,
+						))
+
+						next.ServeHTTP(w, r)
+						return
+					}
+				}
+			}
+
 			w.Header().Set("WWW-Authenticate", `Basic realm="Private Area"`)
 			w.WriteHeader(401)
 			return
 		}
 
+		// if you know where the manifest is you can have it
 		if path == "manifest-"+manifestKey+"/manifest.json" {
 			r.URL.Path = "/manifest/manifest.json"
 		}

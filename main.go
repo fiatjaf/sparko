@@ -27,6 +27,7 @@ var scookie = securecookie.New([]byte("ilsvfoisg7rils3g4fo8segzr"), []byte("OHAO
 var accessKey string
 var manifestKey string
 var login string
+var keys Keys
 
 func main() {
 	zerolog.SetGlobalLevel(zerolog.DebugLevel)
@@ -71,6 +72,11 @@ func main() {
 		pflag.PrintDefaults()
 		fmt.Fprintf(os.Stderr, "\n\nExample\n  $ sparko -l ~/.lightning\n\nAll options may also be specified as environment variables:\n  $ LN_PATH=/data/lightning PORT=8070 NO_TLS=1 sparko\nOr define a config file at ~/.config/sparko.toml or ~/.config/sparko.yaml")
 		os.Exit(0)
+	}
+
+	keys, err = readPermissionsConfig()
+	if err != nil {
+		log.Fatal().Err(err).Msg("error reading permissions config")
 	}
 
 	// compute access key
