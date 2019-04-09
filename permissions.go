@@ -1,6 +1,9 @@
 package main
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/spf13/viper"
 )
 
@@ -46,6 +49,36 @@ type PermissionSet struct {
 	Profile *string `mapstructure:"profile"`
 
 	PayMaxSatoshis *int `mapstructure:"pay_max_satoshis"`
+}
+
+func (ps PermissionSet) String() string {
+	s := ""
+
+	if len(ps.AllowedMethods) > 0 {
+		methods := make([]string, len(ps.AllowedMethods))
+		i := 0
+		for method, _ := range ps.AllowedMethods {
+			methods[i] = method
+			i++
+		}
+		s += "allowed={" + strings.Join(methods, ",") + "}"
+	} else if len(ps.DisallowedMethods) > 0 {
+		methods := make([]string, len(ps.DisallowedMethods))
+		i := 0
+		for method, _ := range ps.DisallowedMethods {
+			methods[i] = method
+			i++
+		}
+		s += "disallowed={" + strings.Join(methods, ",") + "}"
+	} else {
+		s += "full-access"
+	}
+
+	if ps.PayMaxSatoshis != nil {
+		s += fmt.Sprintf(" pay-max=%d", *ps.PayMaxSatoshis)
+	}
+
+	return s
 }
 
 var ReadOnly = PermissionSet{

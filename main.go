@@ -34,7 +34,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "error instantiating logger on stderr")
 		os.Exit(-1)
 	}
-	log.SetFormat("[%{filename}] [%{level}] %{message}")
+	log.SetFormat("[%{level}] %{message}")
 
 	viper.SetConfigName("sparko")
 	viper.AddConfigPath("$HOME/.config")
@@ -57,7 +57,7 @@ func main() {
 	pflag.Bool("no-tls", false, "disable TLS for non-localhost hosts")
 	pflag.Bool("no-webui", false, "run API server without serving client assets")
 	pflag.Bool("no-test-conn", false, "skip testing access to c-lightning rpc")
-	pflag.BoolP("print-key", "k", false, "print access key to console")
+	pflag.BoolP("print-key", "k", false, "print access keys to console")
 	pflag.BoolP("version", "v", false, "output version number")
 	pflag.BoolP("help", "h", false, "output usage information")
 	pflag.CommandLine.SortFlags = false
@@ -92,7 +92,12 @@ func main() {
 	accessKey = hmacStr(login, "access-key")
 	manifestKey = hmacStr(accessKey, "manifest-key")
 	if viper.GetBool("print-key") {
-		log.InfoF("Access key for remote API access: %s.", accessKey)
+		log.Info("Access keys:")
+		fmt.Fprintf(os.Stderr, "  %s (default/login): full-access", accessKey)
+		for key, permissions := range keys {
+			fmt.Fprintf(os.Stderr, "\n  %s: %s", key, permissions)
+		}
+		fmt.Fprintf(os.Stderr, "\n")
 	}
 
 	// start lightning client
