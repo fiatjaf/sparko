@@ -84,6 +84,7 @@ func (ps PermissionSet) String() string {
 var ReadOnly = PermissionSet{
 	AllowedMethods: map[string]bool{
 		"getinfo":        true,
+		"listforwards":   true,
 		"listfunds":      true,
 		"listpayments":   true,
 		"listinvoices":   true,
