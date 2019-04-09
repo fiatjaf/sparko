@@ -61,10 +61,11 @@ If you're looking for a RPC server to place in front of your lightningd node and
 
 It's an ACL-like security model that is much simpler (and old) than macaroons. Read more on [PERMISSIONS.md](PERMISSIONS.md).
 
-How to build
-------------
+FAQ
+---
 
-`make` should work.
+ * **How do I build?** `make` should work as long as you have [go-bindata](https://github.com/go-bindata/go-bindata) and all the other dependencies (maybe we move to the new Go modules thing, but not yet).
+ * **What are these "lean" and "full" binaries?** Lean binaries don't include the HTML/JS UI, just the server (for when you just want to call RPC methods over the wire). Doesn't make much difference, but it's something.
 
 License
 -------
