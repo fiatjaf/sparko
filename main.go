@@ -13,7 +13,6 @@ import (
 	"github.com/gorilla/securecookie"
 	"github.com/lucsky/cuid"
 	"github.com/mitchellh/go-homedir"
-	"github.com/rs/cors"
 	"github.com/rs/zerolog"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
@@ -117,10 +116,7 @@ func main() {
 	host := viper.GetString("host")
 	port := viper.GetString("port")
 	srv := &http.Server{
-		Handler: cors.New(cors.Options{
-			AllowedOrigins:   []string{"*"},
-			AllowCredentials: false,
-		}).Handler(router),
+		Handler:      router,
 		Addr:         host + ":" + port,
 		WriteTimeout: 25 * time.Second,
 		ReadTimeout:  25 * time.Second,
