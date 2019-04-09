@@ -58,8 +58,9 @@ func main() {
 	pflag.Bool("no-webui", false, "run API server without serving client assets")
 	pflag.Bool("no-test-conn", false, "skip testing access to c-lightning rpc")
 	pflag.BoolP("print-key", "k", false, "print access keys to console")
-	pflag.BoolP("version", "v", false, "output version number")
+	pflag.BoolP("verbose", "V", false, "display debugging information")
 	pflag.BoolP("help", "h", false, "output usage information")
+	pflag.BoolP("version", "v", false, "output version number")
 	pflag.CommandLine.SortFlags = false
 	pflag.Parse()
 	viper.BindPFlags(pflag.CommandLine)
@@ -78,6 +79,12 @@ func main() {
 		os.Exit(0)
 	}
 
+	// log level
+	if viper.GetBool("verbose") {
+		log.SetLogLevel(logger.DebugLevel)
+	}
+
+	// permissions
 	keys, err = readPermissionsConfig()
 	if err != nil {
 		log.WarningF("Error reading permissions config: %s.", err)
