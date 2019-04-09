@@ -100,9 +100,9 @@ func main() {
 	manifestKey = hmacStr(accessKey, "manifest-key")
 	if viper.GetBool("print-key") {
 		log.Info("Access keys:")
-		fmt.Fprintf(os.Stderr, "  %s (default/login): full-access", accessKey)
+		fmt.Fprintf(os.Stderr, "\033[%dm  %s (default/login): full-access", logger.White, accessKey)
 		for key, permissions := range keys {
-			fmt.Fprintf(os.Stderr, "\n  %s: %s", key, permissions)
+			fmt.Fprintf(os.Stderr, "\n\033[%dm  %s: %s", logger.White, key, permissions)
 		}
 		fmt.Fprintf(os.Stderr, "\n")
 	}
