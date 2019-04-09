@@ -20,16 +20,16 @@ func hmacStr(key, data string) string {
 func probeLightningd() {
 	nodeinfo, err := ln.Call("getinfo")
 	if err != nil {
-		log.Warn().Err(err).Msg("can't talk to lightningd. retrying.")
-		time.Sleep(time.Second * 5)
+		log.WarningF("Can't talk to lightningd (%s). Retrying.", err)
+		time.Sleep(time.Second * 10)
 		probeLightningd()
 		return
 	}
-	log.Info().
-		Str("id", nodeinfo.Get("id").String()).
-		Str("alias", nodeinfo.Get("alias").String()).
-		Int64("channels", nodeinfo.Get("num_active_channels").Int()).
-		Int64("blockheight", nodeinfo.Get("blockheight").Int()).
-		Str("version", nodeinfo.Get("version").String()).
-		Msg("lightning node connected")
+	log.InfoF("Connected to lightningd node id %s, alias %s. Running version %s with %d channels on blockheight %d.",
+		nodeinfo.Get("id").String(),
+		nodeinfo.Get("alias").String(),
+		nodeinfo.Get("version").String(),
+		nodeinfo.Get("num_active_channels").Int(),
+		nodeinfo.Get("blockheight").Int(),
+	)
 }

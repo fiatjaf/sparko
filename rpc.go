@@ -83,8 +83,7 @@ func handleRPC(w http.ResponseWriter, r *http.Request) {
 	// actually do the call
 	respbytes, err := ln.CallMessageRaw(time.Second*30, req)
 	if err != nil {
-		log.Error().Err(err).Str("method", req.Method).
-			Msg("error calling rpc")
+		log.NoticeF("Error calling RPC '%s': %s", req.Method, err)
 		w.WriteHeader(500)
 
 		if cmderr, ok := err.(lightning.ErrorCommand); ok {

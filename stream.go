@@ -3,6 +3,7 @@ package main
 import (
 	"io/ioutil"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -20,7 +21,8 @@ func startStreams() eventsource.EventSource {
 
 	res, err := ln.Call("listinvoices")
 	if err != nil {
-		log.Fatal().Err(err).Msg("failed to list invoices.")
+		log.ErrorF("Failed to list invoices: %s.", err)
+		os.Exit(2)
 	}
 	indexes := res.Get("invoices.#.pay_index").Array()
 	for _, indexr := range indexes {
@@ -68,12 +70,12 @@ func pollRate(ee chan<- event) {
 
 	resp, err := http.Get("https://www.bitstamp.net/api/v2/ticker/btcusd")
 	if err != nil || resp.StatusCode >= 300 {
-		log.Error().Err(err).Int("code", resp.StatusCode).Msg("error fetching BTC price.")
+		log.NoticeF("%d error fetching BTC price: %s.", resp.StatusCode, err)
 		return
 	}
 	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Error().Err(err).Msg("error decoding BTC price.")
+		log.NoticeF("Error decoding BTC price: %s.", err)
 		return
 	}
 

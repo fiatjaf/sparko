@@ -8,12 +8,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/apsdehal/go-logger"
 	"github.com/fiatjaf/lightningd-gjson-rpc"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/securecookie"
 	"github.com/lucsky/cuid"
 	"github.com/mitchellh/go-homedir"
-	"github.com/rs/zerolog"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
@@ -21,7 +21,7 @@ import (
 var err error
 var Version string
 var ln *lightning.Client
-var log = zerolog.New(os.Stderr).Output(zerolog.ConsoleWriter{Out: os.Stderr})
+var log *logger.Logger
 var scookie = securecookie.New([]byte("ilsvfoisg7rils3g4fo8segzr"), []byte("OHAOHDP4BLAKBDPAS3BÇSF"))
 var accessKey string
 var manifestKey string
@@ -29,15 +29,20 @@ var login string
 var keys Keys
 
 func main() {
-	zerolog.SetGlobalLevel(zerolog.DebugLevel)
-	log = log.With().Timestamp().Logger()
+	log, err = logger.New("main", 1, os.Stderr)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error instantiating logger on stderr")
+		os.Exit(-1)
+	}
+	log.SetFormat("[%{filename}] [%{level}] %{message}")
 
 	viper.SetConfigName("sparko")
 	viper.AddConfigPath("$HOME/.config")
 
 	viper.ReadInConfig()
 	if err != nil {
-		log.Fatal().Err(err).Msg("Fatal error reading config file.")
+		log.Warning("Fatal error reading config file.")
+		os.Exit(-2)
 	}
 
 	viper.AutomaticEnv()
@@ -75,7 +80,8 @@ func main() {
 
 	keys, err = readPermissionsConfig()
 	if err != nil {
-		log.Fatal().Err(err).Msg("error reading permissions config")
+		log.WarningF("Error reading permissions config: %s.", err)
+		os.Exit(-3)
 	}
 
 	// compute access key
@@ -86,14 +92,15 @@ func main() {
 	accessKey = hmacStr(login, "access-key")
 	manifestKey = hmacStr(accessKey, "manifest-key")
 	if viper.GetBool("print-key") {
-		fmt.Println("Access key for remote API access: " + accessKey)
+		log.InfoF("Access key for remote API access: %s.", accessKey)
 	}
 
 	// start lightning client
 	lnpath := viper.GetString("ln-path")
 	lnpath, err = homedir.Expand(lnpath)
 	if err != nil {
-		log.Fatal().Err(err).Str("path", lnpath).Msg("cannot find home directory.")
+		log.ErrorF("Cannot find home directory (on %s): %s.", lnpath, err)
+		os.Exit(-4)
 	}
 	ln = &lightning.Client{Path: path.Join(lnpath, "lightning-rpc")}
 	if !viper.GetBool("no-test-conn") {
@@ -122,18 +129,19 @@ func main() {
 		ReadTimeout:  25 * time.Second,
 	}
 	if host == "localhost" && !viper.GetBool("force-tls") || viper.GetBool("no-tls") {
-		log.Info().Str("addr", "http://"+srv.Addr+"/").Msg("HTTP server on")
+		log.Info("HTTP server on http://" + srv.Addr + "/")
 		err = srv.ListenAndServe()
 	} else {
-		log.Info().Str("addr", "https://"+srv.Addr+"/").Msg("HTTPS server on")
+		log.Info("HTTPS server on https://" + srv.Addr + "/")
 		tlspath := viper.GetString("tls-path")
 		tlspath, err = homedir.Expand(tlspath)
 		if err != nil {
-			log.Fatal().Err(err).Str("path", tlspath).Msg("cannot find home directory.")
+			log.ErrorF("Cannot find home directory (on %s): %s.", tlspath, err)
+			os.Exit(-5)
 		}
 		err = srv.ListenAndServeTLS(path.Join(tlspath, "cert.pem"), path.Join(tlspath, "key.pem"))
 	}
 	if err != http.ErrServerClosed {
-		log.Warn().Err(err).Msg("error starting server.")
+		log.ErrorF("Error starting HTTP server: %s.", err)
 	}
 }
