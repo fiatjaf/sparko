@@ -22,7 +22,7 @@ var err error
 var Version string
 var ln *lightning.Client
 var log *logger.Logger
-var scookie = securecookie.New([]byte("ilsvfoisg7rils3g4fo8segzr"), []byte("OHAOHDP4BLAKBDPAS3BÇSF"))
+var scookie = securecookie.New(securecookie.GenerateRandomKey(32), nil)
 var accessKey string
 var manifestKey string
 var login string
