@@ -14,6 +14,7 @@ import (
 	"github.com/gorilla/securecookie"
 	"github.com/lucsky/cuid"
 	"github.com/mitchellh/go-homedir"
+	"github.com/rs/cors"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
@@ -126,7 +127,7 @@ func main() {
 	router := mux.NewRouter()
 	router.Use(authMiddleware)
 	router.Path("/rpc").Methods("POST").HandlerFunc(handleRPC)
-	router.Path("/stream").Methods("GET").Handler(es)
+	router.Path("/stream").Methods("GET").Handler(cors.AllowAll().Handler(es))
 	if !viper.GetBool("no-webui") {
 		addWebUI(router)
 	}
