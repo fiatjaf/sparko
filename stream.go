@@ -40,6 +40,7 @@ func startStreams() eventsource.EventSource {
 				[]byte("Cache-Control: no-cache"),
 				[]byte("Content-Type: text/event-stream"),
 				[]byte("Connection: keep-alive"),
+				[]byte("Access-Control-Allow-Origin: *"),
 			}
 		},
 	)
