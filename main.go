@@ -39,7 +39,13 @@ func main() {
 			{"sparko-allow-cors", "bool", false, "allow CORS"},
 		},
 		RPCMethods: []plugin.RPCMethod{
+			// just a useful helper
 			InvoiceWithDescriptionHashMethod,
+
+			// required by spark-wallet
+			connectFund,
+			closeGet,
+			listpaysExt,
 		},
 		Subscriptions: []plugin.Subscription{
 			{
