@@ -104,7 +104,7 @@ func main() {
 			// declare routes
 			router := mux.NewRouter()
 
-			router.Use(authMiddleware)
+			router.Use(authMiddleware(p))
 			router.Use(gziphandler.GzipHandler)
 
 			router.Path("/stream").Methods("GET").Handler(

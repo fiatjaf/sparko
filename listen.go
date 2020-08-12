@@ -59,10 +59,7 @@ func listen(p *plugin.Plugin, router http.Handler) {
 			},
 			Handler: router,
 			BaseContext: func(_ net.Listener) context.Context {
-				return context.WithValue(
-					context.Background(),
-					"client", p.Client,
-				)
+				return context.WithValue(context.Background(), "plugin", p)
 			},
 			TLSNextProto: make(map[string]func(*http.Server, *tls.Conn, http.Handler)),
 		}
@@ -74,10 +71,7 @@ func listen(p *plugin.Plugin, router http.Handler) {
 			Addr:    host + ":" + port,
 			Handler: router,
 			BaseContext: func(_ net.Listener) context.Context {
-				return context.WithValue(
-					context.Background(),
-					"client", p.Client,
-				)
+				return context.WithValue(context.Background(), "plugin", p)
 			},
 			TLSNextProto: make(map[string]func(*http.Server, *tls.Conn, http.Handler)),
 		}

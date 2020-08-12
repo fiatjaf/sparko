@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+
+	"github.com/fiatjaf/lightningd-gjson-rpc/plugin"
 )
 
 func defaultAuth(r *http.Request) error {
@@ -35,59 +37,62 @@ func defaultAuth(r *http.Request) error {
 	return fmt.Errorf("Invalid access key.")
 }
 
-func authMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		path := strings.TrimPrefix(r.URL.Path, "/")
+func authMiddleware(p *plugin.Plugin) func(next http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			path := strings.TrimPrefix(r.URL.Path, "/")
 
-		if path == "" || path == "rpc" || path == "stream" {
-			// default key / login
-			if err := defaultAuth(r); err == nil {
-				// set cookie
-				user := strings.Split(login, ":")[0]
-				if encoded, err := scookie.Encode("user", user); err == nil {
-					cookie := &http.Cookie{
-						Name:     "user",
-						Value:    encoded,
-						Secure:   true,
-						HttpOnly: true,
-						SameSite: http.SameSiteStrictMode,
-						MaxAge:   2592000,
+			if path == "" || path == "rpc" || path == "stream" {
+				// default key / login
+				if err := defaultAuth(r); err == nil {
+					// set cookie
+					user := strings.Split(login, ":")[0]
+					if encoded, err := scookie.Encode("user", user); err == nil {
+						cookie := &http.Cookie{
+							Name:     "user",
+							Value:    encoded,
+							Secure:   true,
+							HttpOnly: true,
+							SameSite: http.SameSiteStrictMode,
+							MaxAge:   2592000,
+						}
+						http.SetCookie(w, cookie)
 					}
-					http.SetCookie(w, cookie)
+
+					next.ServeHTTP(w, r)
+					return
 				}
 
-				next.ServeHTTP(w, r)
+				// extra keys -- only access the /rpc and /stream endpoints
+				if path == "rpc" || path == "stream" {
+					for key, permissions := range keys {
+						if r.Header.Get("X-Access") == key ||
+							r.URL.Query().Get("access-key") == key {
+
+							r = r.WithContext(context.WithValue(
+								r.Context(),
+								"permissions", permissions,
+							))
+
+							next.ServeHTTP(w, r)
+							return
+						}
+					}
+				}
+
+				p.Logf("auth failed at /%s", path)
+				w.Header().Set("WWW-Authenticate", `Basic realm="Private Area"`)
+				w.WriteHeader(401)
 				return
 			}
 
-			// extra keys -- only access the /rpc and /stream endpoints
-			if path == "rpc" || path == "stream" {
-				for key, permissions := range keys {
-					if r.Header.Get("X-Access") == key ||
-						r.URL.Query().Get("access-key") == key {
-
-						r = r.WithContext(context.WithValue(
-							r.Context(),
-							"permissions", permissions,
-						))
-
-						next.ServeHTTP(w, r)
-						return
-					}
-				}
+			// if you know where the manifest is you can have it
+			if manifestKey != "" && path == "manifest-"+manifestKey+"/manifest.json" {
+				r.URL.Path = "/manifest/manifest.json"
 			}
 
-			w.Header().Set("WWW-Authenticate", `Basic realm="Private Area"`)
-			w.WriteHeader(401)
+			next.ServeHTTP(w, r)
 			return
-		}
-
-		// if you know where the manifest is you can have it
-		if manifestKey != "" && path == "manifest-"+manifestKey+"/manifest.json" {
-			r.URL.Path = "/manifest/manifest.json"
-		}
-
-		next.ServeHTTP(w, r)
-		return
-	})
+		})
+	}
 }

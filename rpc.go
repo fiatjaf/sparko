@@ -8,12 +8,16 @@ import (
 	"time"
 
 	lightning "github.com/fiatjaf/lightningd-gjson-rpc"
+	"github.com/fiatjaf/lightningd-gjson-rpc/plugin"
 )
 
 func handleRPC(w http.ResponseWriter, r *http.Request) {
+	p := r.Context().Value("plugin").(*plugin.Plugin)
+
 	var req lightning.JSONRPCMessage
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
+		p.Log("got invalid JSON on RPC call")
 		w.WriteHeader(400)
 		return
 	}
@@ -22,6 +26,7 @@ func handleRPC(w http.ResponseWriter, r *http.Request) {
 	if permissions, ok := r.Context().Value("permissions").(map[string]bool); ok {
 		if len(permissions) > 0 {
 			if _, allowed := permissions[req.Method]; !allowed {
+				p.Logf("insufficient permissions for '%s' call", req.Method)
 				w.WriteHeader(401)
 				return
 			}
@@ -29,8 +34,9 @@ func handleRPC(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// actually do the call
-	respbytes, err := r.Context().Value("client").(*lightning.Client).CallMessageRaw(time.Second*30, req)
+	respbytes, err := p.Client.CallMessageRaw(time.Second*30, req)
 	if err != nil {
+		p.Logf("'%s' call returned an error", req.Method)
 		w.WriteHeader(500)
 
 		if cmderr, ok := err.(lightning.ErrorCommand); ok {
