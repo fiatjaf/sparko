@@ -1,0 +1,3 @@
+[submodule "spark-wallet"]
+	path = spark-wallet
+	url = git@github.com:shesek/spark-wallet.git
