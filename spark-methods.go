@@ -77,26 +77,29 @@ var listpaysExt = plugin.RPCMethod{
 			return []bool{}, 0, nil
 		}
 
-		// more than 50, we filter
-		if len(pays) > 50 {
-			pays = pays[:50]
-		}
-
-		// these are not currently available, but be prepared for when they are
-		if pays[0].Get("payment_hash").Exists() && pays[0].Get("created_at").Exists() {
-			return res.Value(), 0, nil
+		// more than 30, we filter
+		if len(pays) > 30 {
+			pays = pays[len(pays)-30:]
 		}
 
 		retval := make([]interface{}, len(pays))
-		filled := make(chan interface{}, len(pays))
-		for _, pay := range pays {
-			go fillPay(p, pay, filled)
+		// these are not currently available, but be prepared for when they are
+		if pays[0].Get("payment_hash").Exists() && pays[0].Get("created_at").Exists() {
+			for i, pay := range pays {
+				retval[i] = pay.Value()
+			}
+		} else {
+			filled := make(chan interface{}, len(pays))
+			for _, pay := range pays {
+				go fillPay(p, pay, filled)
+			}
+			i := 0
+			for fpay := range filled {
+				retval[i] = fpay
+				i++
+			}
 		}
-		i := 0
-		for fpay := range filled {
-			retval[i] = fpay
-			i++
-		}
+
 		return map[string]interface{}{"pays": retval}, 0, nil
 	},
 }
@@ -112,7 +115,6 @@ func fillPay(p *plugin.Plugin, pay gjson.Result, filled chan<- interface{}) {
 	hash := sha256.Sum256(preimage)
 	hexhash := hex.EncodeToString(hash[:])
 	payv["payment_hash"] = hexhash
-
 	res, _ := p.Client.CallNamed("listsendpays", "payment_hash", hexhash)
 	payv["created_at"] = res.Get("payments.0.created_at").Int()
 
