@@ -8,6 +8,7 @@ import (
 	"github.com/NYTimes/gziphandler"
 	assetfs "github.com/elazarl/go-bindata-assetfs"
 	"github.com/fiatjaf/lightningd-gjson-rpc/plugin"
+	"github.com/fiatjaf/sparko/invoicewithdescriptionhash"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/securecookie"
 	"github.com/rs/cors"
@@ -40,7 +41,7 @@ func main() {
 		},
 		RPCMethods: []plugin.RPCMethod{
 			// just a useful helper
-			InvoiceWithDescriptionHashMethod,
+			invoicewithdescriptionhash.InvoiceWithDescriptionHashMethod,
 
 			// required by spark-wallet
 			connectFund,
