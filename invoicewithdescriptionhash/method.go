@@ -1,6 +1,7 @@
 package invoicewithdescriptionhash
 
 import (
+	"crypto/sha256"
 	"encoding/hex"
 	"errors"
 	"time"
@@ -32,6 +33,8 @@ var InvoiceWithDescriptionHashMethod = plugin.RPCMethod{
 		}
 		bpreimage, _ := hex.DecodeString(preimage)
 
+		rhash := sha256.Sum256(bpreimage)
+
 		descriptionHash, _ := hex.DecodeString(
 			params.Get("description_hash").String())
 
@@ -55,6 +58,7 @@ var InvoiceWithDescriptionHashMethod = plugin.RPCMethod{
 			"bolt11":           newinv,
 			"description_hash": hex.EncodeToString(descriptionHash),
 			"preimage":         preimage,
+			"payment_hash":     hex.EncodeToString(rhash[:]),
 			"expires_at":       time.Now().Add(dexpiry).Unix(),
 		}, 0, nil
 	},
