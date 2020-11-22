@@ -26,7 +26,7 @@ const DEFAULTPORT = "9737"
 func main() {
 	p := plugin.Plugin{
 		Name:    "sparko",
-		Version: "v2.4",
+		Version: "v2.5",
 		Options: []plugin.Option{
 			{"sparko-host", "string", "127.0.0.1", "http(s) server listen address"},
 			{"sparko-port", "string", DEFAULTPORT, "http(s) server port"},
