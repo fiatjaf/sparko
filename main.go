@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/NYTimes/gziphandler"
-	assetfs "github.com/elazarl/go-bindata-assetfs"
 	"github.com/fiatjaf/lightningd-gjson-rpc/plugin"
 	"github.com/fiatjaf/sparko/invoicewithdescriptionhash"
 	"github.com/gorilla/mux"
@@ -21,8 +20,6 @@ var manifestKey string
 var login string
 var ee chan event
 var keys Keys
-
-var httpPublic = &assetfs.AssetFS{Asset: Asset, AssetDir: AssetDir}
 
 const DEFAULTPORT = "9737"
 
@@ -129,7 +126,7 @@ func main() {
 						w.Write(indexb)
 						return
 					})
-				router.PathPrefix("/").Methods("GET").Handler(http.FileServer(httpPublic))
+				router.PathPrefix("/").Methods("GET").Handler(http.FileServer(AssetFile()))
 			}
 
 			// start server
