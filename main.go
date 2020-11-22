@@ -22,14 +22,14 @@ var login string
 var ee chan event
 var keys Keys
 
-var httpPublic = &assetfs.AssetFS{Asset: Asset, AssetDir: AssetDir, Prefix: "spark-wallet/client/dist/"}
+var httpPublic = &assetfs.AssetFS{Asset: Asset, AssetDir: AssetDir}
 
 const DEFAULTPORT = "9737"
 
 func main() {
 	p := plugin.Plugin{
 		Name:    "sparko",
-		Version: "v2.3",
+		Version: "v2.4",
 		Options: []plugin.Option{
 			{"sparko-host", "string", "127.0.0.1", "http(s) server listen address"},
 			{"sparko-port", "string", DEFAULTPORT, "http(s) server port"},
@@ -117,8 +117,9 @@ func main() {
 				// web ui
 				router.Path("/").Methods("GET").HandlerFunc(
 					func(w http.ResponseWriter, r *http.Request) {
-						indexb, err := Asset("spark-wallet/client/dist/index.html")
+						indexb, err := Asset("index.html")
 						if err != nil {
+							p.Log(err.Error())
 							w.WriteHeader(404)
 							return
 						}
