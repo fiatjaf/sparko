@@ -21,6 +21,12 @@ func defaultAuth(r *http.Request) error {
 	if r.URL.Query().Get("access-key") == accessKey {
 		return nil
 	}
+	if cookie, err := r.Cookie("user"); err == nil {
+		var value string
+		if err = scookie.Decode("user", cookie.Value, &value); err == nil && strings.HasPrefix(login+":", value) {
+			return nil
+		}
+	}
 
 	// try to get basic auth
 	v := r.Header.Get("Authorization")
