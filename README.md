@@ -84,7 +84,7 @@ When starting `lightningd`, check the logs for errors regarding `sparko` initial
 Replace the following with your actual values:
 
 ```
-curl -k https://0.0.0.0:9737/rpc -d '{"method": "pay", "params": ["lnbc..."]}' -H 'X-Access masterkeythatcandoeverything'
+curl -k https://0.0.0.0:9737/rpc -d '{"method": "pay", "params": ["lnbc..."]}' -H 'X-Access: masterkeythatcandoeverything'
 ```
 
 See also [a list of client libraries](#client-libraries).
@@ -94,7 +94,7 @@ See also [a list of client libraries](#client-libraries).
 You can also limit the number of things you're returning. For example, `listinvoices` and `listsendpays` tend to get out of hand quickly and you may not want to return all your invoices and payments. You can add a `Range` header to solve this issue:
 
 ```
-curl -k https://0.0.0.0:9737/rpc -d '{"method": "listsendpays"}' -H 'X-Access masterkeythatcandoeverything' -H 'Range: payments=0-99'
+curl -k https://0.0.0.0:9737/rpc -d '{"method": "listsendpays"}' -H 'X-Access: masterkeythatcandoeverything' -H 'Range: payments=0-99'
 ```
 
 The above means that `sparko` will take the response it gets from `lightningd` and slice the array contained in the key `"payments"` to get values between 0 and 99, i.e., the first 100 payments. You could get the last 50 payments, for example, by passing `-H 'Range: payments=-50'` and so on. This is method-agnostic (that's why you must supply the `payments=` parameter), so you can use it on other methods and even methods provided by other plugins.
