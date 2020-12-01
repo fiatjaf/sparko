@@ -4,3 +4,4 @@ node_modules
 dist
 bindata.go
 sparko
+sparko-client-debug
