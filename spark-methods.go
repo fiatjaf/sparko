@@ -71,12 +71,8 @@ var listpaysExt = plugin.RPCMethod{
 		if err != nil {
 			return nil, 37, errors.New("cannot listpays -- enable the pay plugin")
 		}
-		pays := res.Get("pays").Array()
-		if len(pays) == 0 {
-			// empty,we don't care
-			return []bool{}, 0, nil
-		}
 
+		pays := res.Get("pays").Array()
 		// more than 30, we filter
 		if len(pays) > 30 {
 			pays = pays[len(pays)-30:]
