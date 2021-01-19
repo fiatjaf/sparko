@@ -80,7 +80,7 @@ var listpaysExt = plugin.RPCMethod{
 
 		retval := make([]interface{}, len(pays))
 		// these are not currently available, but be prepared for when they are
-		if pays[0].Get("payment_hash").Exists() && pays[0].Get("created_at").Exists() {
+		if len(pays) > 0 && pays[0].Get("payment_hash").Exists() && pays[0].Get("created_at").Exists() {
 			for i, pay := range pays {
 				retval[i] = pay.Value()
 			}
