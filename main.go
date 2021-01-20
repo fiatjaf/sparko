@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	"github.com/NYTimes/gziphandler"
 	"github.com/fiatjaf/lightningd-gjson-rpc/plugin"
@@ -77,9 +78,10 @@ func main() {
 			// compute access key
 			login, _ = p.Args.String("sparko-login")
 			if login != "" {
+				user := strings.Split(login, ":")[0]
 				accessKey = hmacStr(login, "access-key")
 				manifestKey = hmacStr(accessKey, "manifest-key")
-				p.Log("Login credentials read: " + login + " (full-access key: " + accessKey + ")")
+				p.Log("Login credentials read: " + user + ":...")
 			}
 
 			// permissions
