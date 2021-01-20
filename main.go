@@ -14,7 +14,6 @@ import (
 	"github.com/rs/cors"
 )
 
-var err error
 var scookie = securecookie.New(securecookie.GenerateRandomKey(32), nil)
 var accessKey string
 var manifestKey string

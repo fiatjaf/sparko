@@ -39,7 +39,7 @@ func readPermissionsConfig(configstr string) (Keys, error) {
 		keys[key] = set
 	}
 
-	return keys, err
+	return keys, nil
 }
 
 func (keys Keys) Summary() (string, int) {
