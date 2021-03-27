@@ -26,7 +26,7 @@ const DEFAULTPORT = "9737"
 func main() {
 	p := plugin.Plugin{
 		Name:    "sparko",
-		Version: "v2.5",
+		Version: "v2.6",
 		Options: []plugin.Option{
 			{"sparko-host", "string", "127.0.0.1", "http(s) server listen address"},
 			{"sparko-port", "string", DEFAULTPORT, "http(s) server port"},
@@ -46,6 +46,12 @@ func main() {
 			listpaysExt,
 		},
 		Subscriptions: []plugin.Subscription{
+			subscribeSSE("channel_opened"),
+			subscribeSSE("channel_open_failed"),
+			subscribeSSE("channel_state_changed"),
+			subscribeSSE("channel_opened"),
+			subscribeSSE("connect"),
+			subscribeSSE("disconnect"),
 			{
 				"invoice_payment",
 				func(p *plugin.Plugin, params plugin.Params) {
@@ -64,14 +70,14 @@ func main() {
 					ee <- event{typ: "inv-paid", data: inv.String()}
 				},
 			},
-			subscribeSSE("channel_opened"),
-			subscribeSSE("connect"),
-			subscribeSSE("disconnect"),
+			subscribeSSE("invoice_creation"),
 			subscribeSSE("warning"),
 			subscribeSSE("forward_event"),
 			subscribeSSE("sendpay_success"),
 			subscribeSSE("sendpay_failure"),
 			subscribeSSE("sendpay_success"),
+			subscribeSSE("coin_movement"),
+			subscribeSSE("open_channel_peer_sigs"),
 		},
 		OnInit: func(p *plugin.Plugin) {
 			// compute access key
