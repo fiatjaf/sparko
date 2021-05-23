@@ -2,7 +2,9 @@ package main
 
 import (
 	"bytes"
+	"embed"
 	"encoding/json"
+	"io/fs"
 	"net/http"
 
 	"github.com/NYTimes/gziphandler"
@@ -22,6 +24,10 @@ var ee chan event
 var keys Keys
 
 const DEFAULTPORT = "9737"
+
+//go:embed spark-wallet/client/dist/*
+var static embed.FS
+var sparkWallet, _ = fs.Sub(static, "spark-wallet/client/dist")
 
 func main() {
 	p := plugin.Plugin{
@@ -120,7 +126,7 @@ func main() {
 				// web ui
 				router.Path("/").Methods("GET").HandlerFunc(
 					func(w http.ResponseWriter, r *http.Request) {
-						indexb, err := Asset("index.html")
+						indexb, err := fs.ReadFile(sparkWallet, "index.html")
 						if err != nil {
 							p.Log(err.Error())
 							w.WriteHeader(404)
@@ -132,7 +138,9 @@ func main() {
 						w.Write(indexb)
 						return
 					})
-				router.PathPrefix("/").Methods("GET").Handler(http.FileServer(AssetFile()))
+				router.PathPrefix("/").Methods("GET").Handler(
+					http.FileServer(http.FS(sparkWallet)),
+				)
 			}
 
 			// start server

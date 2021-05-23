@@ -51,8 +51,7 @@ RUN groupadd -r app && useradd -r -m -g app app && \
 USER app
 WORKDIR /app
 
-RUN go get -u github.com/go-bindata/go-bindata/... && \
-    go get github.com/mitchellh/gox
+RUN go get github.com/mitchellh/gox
 
 COPY . /tmp/app/
 
@@ -68,4 +67,3 @@ COPY --from=sparko-builder /app/dist ${PLUGINS_PATH}/sparko
 
 EXPOSE 9735 9835
 ENTRYPOINT  [ "/usr/bin/tini", "-g", "--", "./entrypoint.sh" ]
-

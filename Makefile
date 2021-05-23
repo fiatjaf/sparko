@@ -1,10 +1,8 @@
 dist: $(shell find . -name "*.go") spark-wallet/client/dist
-	go-bindata -prefix spark-wallet/client/dist -fs -o bindata.go spark-wallet/client/dist/...
 	mkdir -p dist
 	gox -ldflags="-s -w" -osarch="darwin/amd64 linux/386 linux/amd64 linux/arm freebsd/amd64" -output="dist/sparko_{{.OS}}_{{.Arch}}"
 
 sparko: $(shell find . -name "*.go") spark-wallet/client/dist/app.js
-	go-bindata -debug -prefix spark-wallet/client/dist -fs -o bindata.go spark-wallet/client/dist/...
 	go build -o ./sparko
 
 spark-wallet/client/dist/app.js: $(shell find spark-wallet/client/src)
@@ -16,5 +14,4 @@ sparko-client-debug:
 	git submodule update
 	cd spark-wallet/client/ && npm install
 	cd spark-wallet/client && NODE_ENV=development PATH=$$PATH:./node_modules/.bin/ ./build.sh
-	go-bindata -prefix spark-wallet/client/dist -fs -o bindata.go spark-wallet/client/dist/...
 	go build -o ./sparko-client-debug
