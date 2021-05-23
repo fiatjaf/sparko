@@ -77,7 +77,7 @@ func main() {
 			subscribeSSE("sendpay_failure"),
 			subscribeSSE("sendpay_success"),
 			subscribeSSE("coin_movement"),
-			subscribeSSE("open_channel_peer_sigs"),
+			subscribeSSE("openchannel_peer_sigs"),
 		},
 		OnInit: func(p *plugin.Plugin) {
 			// compute access key
