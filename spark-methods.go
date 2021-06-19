@@ -26,7 +26,7 @@ var connectFund = plugin.RPCMethod{
 
 		satoshi := params.Get("satoshi").String()
 		feerate := params.Get("feerate").String()
-		res, err := p.Client.Call(peerid, satoshi, feerate)
+		res, err := p.Client.Call("fundchannel", peerid, satoshi, feerate)
 		if err != nil {
 			return nil, 37, errors.New("cannot open channel")
 		}
