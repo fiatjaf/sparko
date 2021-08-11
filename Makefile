@@ -1,6 +1,6 @@
 dist: $(shell find . -name "*.go") spark-wallet/client/dist
 	mkdir -p dist
-	gox -ldflags="-s -w" -osarch="darwin/amd64 linux/386 linux/amd64 linux/arm freebsd/amd64 openbsd/amd64" -output="dist/sparko_{{.OS}}_{{.Arch}}"
+	gox -ldflags="-s -w" -osarch="darwin/amd64 linux/386 linux/amd64 linux/arm linux/arm64 freebsd/amd64 openbsd/amd64" -output="dist/sparko_{{.OS}}_{{.Arch}}"
 
 sparko: $(shell find . -name "*.go") spark-wallet/client/dist/app.js
 	go build -o ./sparko

@@ -68,8 +68,8 @@ github.com/elazarl/go-bindata-assetfs v1.0.0/go.mod h1:v+YaWX3bdea5J/mo8dSETolEo
 github.com/fiatjaf/go-lnurl v1.0.0/go.mod h1:BqA8WXAOzntF7Z3EkVO7DfP4y5rhWUmJ/Bu9KBke+rs=
 github.com/fiatjaf/go-lnurl v1.2.0 h1:3x2VYqQN1BIA+m67PhdWJR37PGWcPRZzWQX3BSLLPlY=
 github.com/fiatjaf/go-lnurl v1.2.0/go.mod h1:BqA8WXAOzntF7Z3EkVO7DfP4y5rhWUmJ/Bu9KBke+rs=
-github.com/fiatjaf/lightningd-gjson-rpc v1.0.1 h1:ERBKSzUyYm1WiFrPNr/TVTOJ8B9iotgG1END4DpelE4=
-github.com/fiatjaf/lightningd-gjson-rpc v1.0.1/go.mod h1:SQGA0qcY2qypaMXDQlE5V5+2MnLZzQ7NzfRsScliFeE=
+github.com/fiatjaf/lightningd-gjson-rpc v1.4.0 h1:Iv5tt4YuNoSMfR39wiV0tqnHYTJ85omAKuUXbBFvpt0=
+github.com/fiatjaf/lightningd-gjson-rpc v1.4.0/go.mod h1:SQGA0qcY2qypaMXDQlE5V5+2MnLZzQ7NzfRsScliFeE=
 github.com/fiatjaf/ln-decodepay v1.0.0 h1:1YUMjvLock+BicMNwoZ/OA3oG2ZYEaJ8AzdS6EGVMTQ=
 github.com/fiatjaf/ln-decodepay v1.0.0/go.mod h1:/LWK+ZUa3i8MqbRjIMAiVQS2+NbhwKWlwib2n446cMQ=
 github.com/frankban/quicktest v1.2.2/go.mod h1:Qh/WofXFeiAFII1aEBu529AtJo6Zg2VHscnEsbBnJ20=
