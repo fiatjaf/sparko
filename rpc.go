@@ -21,6 +21,7 @@ func handleRPC(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(400)
 		return
 	}
+	req.Version = "2.0"
 
 	// check permissions
 	if permissions, ok := r.Context().Value("permissions").(map[string]bool); ok {
