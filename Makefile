@@ -1,4 +1,4 @@
-dist: $(shell find . -name "*.go") spark-wallet/client/dist
+dist: $(shell find . -name "*.go") spark-wallet/client/dist/app.js
 	mkdir -p dist
 	gox -ldflags="-s -w" -osarch="darwin/amd64 linux/386 linux/amd64 linux/arm linux/arm64 freebsd/amd64 openbsd/amd64" -output="dist/sparko_{{.OS}}_{{.Arch}}"
 
