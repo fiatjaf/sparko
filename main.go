@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"io/fs"
 	"net/http"
+	"strings"
 
 	"github.com/NYTimes/gziphandler"
 	"github.com/fiatjaf/lightningd-gjson-rpc/plugin"
@@ -15,7 +16,6 @@ import (
 	"github.com/rs/cors"
 )
 
-var err error
 var scookie = securecookie.New(securecookie.GenerateRandomKey(32), nil)
 var accessKey string
 var manifestKey string
@@ -89,9 +89,10 @@ func main() {
 			// compute access key
 			login, _ = p.Args.String("sparko-login")
 			if login != "" {
+				user := strings.Split(login, ":")[0]
 				accessKey = hmacStr(login, "access-key")
 				manifestKey = hmacStr(accessKey, "manifest-key")
-				p.Log("Login credentials read: " + login + " (full-access key: " + accessKey + ")")
+				p.Log("Login credentials read: " + user + ":...")
 			}
 
 			// permissions
