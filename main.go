@@ -9,19 +9,20 @@ import (
 
 	"github.com/NYTimes/gziphandler"
 	"github.com/fiatjaf/lightningd-gjson-rpc/plugin"
-	"github.com/fiatjaf/sparko/invoicewithdescriptionhash"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/securecookie"
 	"github.com/rs/cors"
 )
 
-var err error
-var scookie = securecookie.New(securecookie.GenerateRandomKey(32), nil)
-var accessKey string
-var manifestKey string
-var login string
-var ee chan event
-var keys Keys
+var (
+	err         error
+	scookie     = securecookie.New(securecookie.GenerateRandomKey(32), nil)
+	accessKey   string
+	manifestKey string
+	login       string
+	ee          chan event
+	keys        Keys
+)
 
 const DEFAULTPORT = "9737"
 
@@ -43,9 +44,6 @@ func main() {
 			{"sparko-allow-cors", "bool", false, "allow CORS"},
 		},
 		RPCMethods: []plugin.RPCMethod{
-			// just a useful helper
-			invoicewithdescriptionhash.InvoiceWithDescriptionHashMethod,
-
 			// required by spark-wallet
 			connectFund,
 			closeGet,
