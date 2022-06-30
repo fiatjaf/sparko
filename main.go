@@ -33,7 +33,7 @@ var sparkWallet, _ = fs.Sub(static, "spark-wallet/client/dist")
 func main() {
 	p := plugin.Plugin{
 		Name:    "sparko",
-		Version: "v2.8",
+		Version: "v2.10",
 		Options: []plugin.Option{
 			{"sparko-host", "string", "127.0.0.1", "http(s) server listen address"},
 			{"sparko-port", "string", DEFAULTPORT, "http(s) server port"},
