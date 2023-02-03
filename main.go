@@ -48,6 +48,9 @@ func main() {
 			connectFund,
 			closeGet,
 			listpaysExt,
+			listinvoicesExt,
+			listconfigsExt,
+			decodecheckExt,
 		},
 		Subscriptions: []plugin.Subscription{
 			subscribeSSE("channel_opened"),
