@@ -108,6 +108,11 @@ Sparko exposes a [SSE](https://developer.mozilla.org/en-US/docs/Web/API/Server-s
  * [JavaScript](https://github.com/fiatjaf/sparko-client) (Node.js and the browser)
  * [Go](https://pkg.go.dev/github.com/fiatjaf/lightningd-gjson-rpc?tab=doc#Client) (initialize it with the Spark URL and key/token instead of a lightning-rpc socket path)
 
+## Polar integration
+
+ * There is an arm64 CLN w/ sparko plugin polar image [here](https://hub.docker.com/r/chongjin/polar-cln-sparko)
+ * The instruction for installation & usage is on the page
+
 ## Open the wallet UI
 
 This is the same code used in [Spark wallet](https://github.com/shesek/spark-wallet).
