@@ -61,8 +61,75 @@ var closeGet = plugin.RPCMethod{
 	},
 }
 
+
+var listinvoicesExt = plugin.RPCMethod{
+	"_listinvoices",
+	"",
+	"",
+	"",
+	func(p *plugin.Plugin, params plugin.Params) (resp interface{}, errCode int, err error) {
+		res, err := p.Client.CallWithCustomTimeout(time.Second*30, "listinvoices")
+		if err != nil {
+			return nil, 37, errors.New("cannot listinvoices")
+		}
+
+		invoices := res.Get("invoices").Array()
+		for _, invoice := range invoices {
+		  if invoice.Get("status").String() == "paid" {
+			invoices = append(invoices, invoice)
+		  }
+		}
+
+		// for _, invoice := range invoices {
+		// 	if invoice.Get("bolt12").String() != "" {
+		// 		err := attachInvoiceMeta(c, invoice)
+		// 		if err != nil {
+		// 			return nil, err
+		// 		}
+		// 	}
+		// }
+
+		// truncatePayerNotes(invoices)
+
+		return map[string]interface{}{"invoices": invoices}, 0, nil
+	},
+}
+
+var listconfigsExt = plugin.RPCMethod{
+	"_listconfigs",
+	"",
+	"",
+	"",
+	func(p *plugin.Plugin, params plugin.Params) (resp interface{}, errCode int, err error) {
+		res, err := p.Client.CallWithCustomTimeout(time.Second*30, "listconfigs")
+		if err != nil {
+			return nil, 37, errors.New("cannot listinvoices")
+		}
+
+		return res, 0, nil
+	},
+}
+
+var decodecheckExt = plugin.RPCMethod{
+	"_decodecheck",
+	"paystr",
+	"",
+	"",
+	func(p *plugin.Plugin, params plugin.Params) (resp interface{}, errCode int, err error) {
+		paystr := params.Get("paystr").String()
+
+		res, err := p.Client.Call("decode", paystr)
+		if err != nil {
+			return nil, 37, errors.New("cannot decodecheck")
+		}
+
+		return res, 0, nil
+	},
+}
+
+
 var listpaysExt = plugin.RPCMethod{
-	"listpaysext",
+	"_listpays",
 	"",
 	"",
 	"",
@@ -104,7 +171,7 @@ var listpaysExt = plugin.RPCMethod{
 		return map[string]interface{}{"pays": retval}, 0, nil
 	},
 }
-
+		
 func fillPay(p *plugin.Plugin, pay gjson.Result, filled chan<- interface{}) {
 	payv := pay.Value().(map[string]interface{})
 	if pay.Get("status").String() != "complete" {
@@ -146,3 +213,12 @@ found:
 		"chan": channel,
 	}, 0, nil
 }
+
+// func truncatePayerNotes(elements []gjson.Result) {
+// 	for i := range elements {
+// 		if elements[i].Get("payer_note").String() != "" && len(elements[i].Get("payer_note").String()) > 1024 {
+// 			elements[i]["payer_note"] = elements[i].Get("payer_note").String()[0:1024]+"…"
+// 			elements[i].Set("payer_note_truncated", true)
+// 		}
+// 	}
+// }
